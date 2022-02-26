@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
@@ -109,6 +110,10 @@ func resourceUserCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if err != nil {
+		if strings.HasPrefix(err.Error(), iam.ErrCodeEntityAlreadyExistsException) {
+			d.SetId(name)
+			return resourceUserRead(d, meta)
+		}
 		return fmt.Errorf("failed creating IAM User (%s): %w", name, err)
 	}
 
